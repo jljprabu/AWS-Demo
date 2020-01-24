@@ -1,0 +1,19 @@
+---
+- name: To create an ec2 instance for web servers
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: To create an instances
+    ec2:
+      key_name: jumb-box-key-pair
+      instance_type: t2.micro
+      region: ap-southeast-1
+      image: ami-05c64f7b4062b0a21
+      wait: yes
+      group: default
+      count: 1
+      vpc_subnet_id: subnet-0fde832501ac57434
+      assign_public_ip: yes
+      instance_tags:
+        Name: webserver02
+    register: ec2
