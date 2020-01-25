@@ -1,0 +1,48 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    keypair: jumb-box-key-pair
+    instance_type: t2.micro 
+    image: ami-04a2d6660f1296314
+    region: ap-southeast-1
+    
+  tasks:
+  - name: To create an instances
+    ec2:
+      key_name: "{{ keypair }}"
+      instance_type: "{{ instance_type }}"
+      image: "{{ image }}"
+      wait: yes
+      count: 1
+      group: Jump-box-sg 
+      region: "{{ region }}"
+      vpc_subnet_id: subnet-0fde832501ac57434
+      assign_public_ip: yes
+      instance_tags:
+        Name: app-server_01
+    register: ec
+
+  - name: Add the newly created host so that we can further contact it
+    add_host:
+      name: "{{ item.public_ip }}"
+      groups: app-server
+    with_items: "{{ ec.instances }}"
+    args:
+     tags:
+       Type: app-server
+
+  - name: Wait for ssh to come up
+    wait_for:
+      host: "{{ item.public_ip }}"
+      port: 22
+      state: started
+    with_items: "{{ec.instances }}"
+
+- hosts: app-server
+  become: yes
+  remote_user: ec2-user
+  roles:
+    - role: ansible-role-java
+    - role: ansible-role-prometheus_node-exporter.yml
+  

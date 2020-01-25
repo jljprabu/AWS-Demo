@@ -9,7 +9,7 @@
       instance_type: t2.micro
       region: ap-southeast-1
       image: ami-05c64f7b4062b0a21
- #     security_group: jump-box-sg
+      group: Jump-box-sg
       wait: yes
       group: default 
       count: 1

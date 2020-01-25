@@ -15,5 +15,5 @@
       vpc_subnet_id: subnet-0fde832501ac57434
       assign_public_ip: yes
       instance_tags:
-        Name: webserver02
+        Name: Monitoring-server01
     register: ec2
