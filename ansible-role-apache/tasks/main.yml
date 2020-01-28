@@ -1,0 +1,7 @@
+---
+
+- name: Install httpd.
+  yum: name=httpd state=latest
+
+- name: Ensure httpd is started and enabled at boot.
+  service: name=httpd state=started

@@ -1,0 +1,52 @@
+---
+- name: Add a nodeusr
+  user:
+    name: nodeusr
+    comment: "Add a Prometheus user"
+    create_home: no
+    shell: /bin/false
+
+- name: download node exporter binary
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
+    dest: /tmp/
+
+- name: Extract node exporter package
+  unarchive:
+    src: /tmp/node_exporter-0.18.1.linux-amd64.tar.gz
+    dest: /tmp/
+    remote_src: yes
+
+- name: Copy node-exporter to bin folder
+  copy:
+    src: /tmp/node_exporter-0.18.1.linux-amd64/node_exporter
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: 0755
+    owner: nodeusr
+    group: nodeusr
+
+- name: touch the file
+  file: path=/etc/systemd/system/node_exporter.service state=touch owner=nodeusr group=nodeusr
+
+- name: modify Prometheus configuration file
+  blockinfile:
+    dest: /etc/systemd/system/node_exporter.service
+    block: |
+      [Unit]
+      Description=Node Exporter
+      After=network.target
+
+      [Service]
+      User=nodeusr
+      Group=nodeusr
+      Type=simple
+      ExecStart=/usr/local/bin/node_exporter
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: reload service
+  service:
+    name: node_exporter 
+    state: started
